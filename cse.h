@@ -42,7 +42,8 @@ struct Environment
     int env;
     vector<string> var;
     vector<string> val;
-    Environment(int n, vector<string> v, vector<string> val) : env(n), var(v), val(val) {}
+    Environment *parent;
+    Environment(int e, vector<string> v, vector<string> val, Environment *p = nullptr) : env(e), var(v), val(val), parent(p) {}
 };
 
 vector<vector<ControlNode>>
