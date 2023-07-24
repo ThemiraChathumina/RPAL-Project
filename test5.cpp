@@ -5,6 +5,6 @@ int main()
 {
 
     Node *root = getST("1.txt");
-    printAST(root);
+    printAST(root); //hi this is me
     return 0;
 }
