@@ -3,16 +3,51 @@
 
 #include "st.h"
 
-struct CSENode
+enum Type
 {
-    string value;
-    int nextStruct =-1;
-    int currentEnv =-1;
-    vector<string> var;
-    CSENode(string v, int n, int c, vector<string> v2) : value(v), nextStruct(n), currentEnv(c), var(v2) {}
+    INT,
+    STRING,
+    BOOL,
+    OP,
+    TAU,
+    LAMBDA,
+    GAMMA,
+    DELTA,
+    ENV,
+    ID,
+    LIST
 };
 
-vector<vector<CSENode>> getControlStruct(Node *root);
-void execute(vector<vector<CSENode>> contStruc);
+struct ControlNode
+{
+    Type type;
+    string value;
+    int next;
+    vector<string> var;
+    ControlNode(Type t, string v, int c = NULL, vector<string> var = {}) : type(t), value(v), next(c), var(var) {}
+};
+
+struct StackNode
+{
+    Type type;
+    string value;
+    int current;
+    int next;
+    vector<string> var;
+    vector<StackNode> children;
+};
+
+struct Environment
+{
+    int env;
+    vector<string> var;
+    vector<string> val;
+    Environment *parent;
+    Environment(int e, vector<string> v, vector<string> val, Environment *p = nullptr) : env(e), var(v), val(val), parent(p) {}
+};
+
+vector<vector<ControlNode>>
+getControlStruct(Node *root);
+void execute(vector<vector<ControlNode>> contStruc);
 
 #endif
