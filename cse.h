@@ -6,13 +6,13 @@
 struct CSENode
 {
     string value;
-    int next;
-    int current;
+    int nextStruct =-1;
+    int currentEnv =-1;
     vector<string> var;
-    CSENode(string v, int n, int c, vector<string> v2) : value(v), next(n), current(c), var(v2) {}
+    CSENode(string v, int n, int c, vector<string> v2) : value(v), nextStruct(n), currentEnv(c), var(v2) {}
 };
 
-vector<vector<Node>> getControlStruct(Node *root);
-void execute(vector<vector<Node>> contStruc);
+vector<vector<CSENode>> getControlStruct(Node *root);
+void execute(vector<vector<CSENode>> contStruc);
 
 #endif
