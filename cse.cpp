@@ -26,18 +26,3 @@ getControlStruct(Node *root)
 
     return contStruc;
 }
-
-void execute(vector<vector<ControlNode *>> contStruc)
-{
-    stack<ControlNode *> controlStack;
-    stack<StackNode *> stateStack;
-    Environment *env = new Environment(0, {}, {});
-    ControlNode *en = new ControlNode(ENV, "0");
-    StackNode *e0 = new StackNode(ENV, "0");
-    controlStack.push(en);
-    stateStack.push(e0);
-    for (int j = 0; j < contStruc[0].size(); j++)
-    {
-        controlStack.push(contStruc[0][j]);
-    }
-}
