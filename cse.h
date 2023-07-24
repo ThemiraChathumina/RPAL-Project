@@ -37,6 +37,14 @@ struct StackNode
     vector<StackNode> children;
 };
 
+struct Environment
+{
+    int env;
+    vector<string> var;
+    vector<string> val;
+    Environment(int n, vector<string> v, vector<string> val) : env(n), var(v), val(val) {}
+};
+
 vector<vector<ControlNode>>
 getControlStruct(Node *root);
 void execute(vector<vector<ControlNode>> contStruc);
