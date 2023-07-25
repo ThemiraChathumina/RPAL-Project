@@ -2,55 +2,69 @@
 #define CSE_H
 
 #include "st.h"
+#include <unordered_map>
+#include <queue>
 
-enum Type
+enum exec_type
 {
-    INT,
-    STRING,
-    BOOL,
-    OP,
-    TAU,
-    LAMBDA,
-    GAMMA,
-    DELTA,
-    BETA,
-    ENV,
-    ID,
-    LIST
+    EXEC_ENV,
+    EXEC_INT,
+    EXEC_STR,
+    EXEC_TUPPLE,
+    EXEC_CTRL_STRUCT,
+    EXEC_PRIMITIVE_FUNC,
+    EXEC_TRUE,
+    EXEC_FALSE,
+    EXEC_NILL,
+    EXEC_DUMMY,
+    EXEC_YSTAR,
+    EXEC_ITA
 };
 
-struct ControlNode
+enum primitive_function
 {
-    Type type;
-    string value;
-    int next;
-    vector<string> var;
-    ControlNode(Type t, string v, int c = -1, vector<string> var = {}) : type(t), value(v), next(c), var(var) {}
+    PRINT,
+    CONC,
+    ORDER,
+    STERN,
+    ISTUPLE,
+    ISINTEGER,
+    STEM,
+    ISTRUTHVALUE,
+    ISSTRING,
+    ITOS
+};
+struct exec_node;
+struct control_node;
+struct environment
+{
+    unordered_map<string, exec_node *> bound_variable;
 };
 
-struct StackNode
+struct exec_node
 {
-    Type type;
-    string value;
-    int current;
-    int next;
-    vector<string> var;
-    vector<StackNode> children;
-    StackNode(Type t, string v, int c = -1, int n = -1, vector<string> var = {}) : type(t), value(v), current(c), next(n), var(var) {}
+    bool conc_flag;
+    exec_type type;
+    int int_val;
+    string str_val;
+    environment *env_val;
+    control_node *ctrl_node_val;
+    queue<exec_node *> *queue_val;
+    primitive_function primitive_func_val;
 };
 
-struct Environment
+struct control_node
 {
-    int env;
-    vector<string> var;
-    vector<string> val;
-    vector<Type> types;
-    Environment *parent;
-    Environment(int e, vector<string> v, vector<string> va, vector<Type> t, Environment *p = nullptr) : env(e), var(v), val(va), types(t), parent(p) {}
+    Node *node;
+    control_node *next;
+    control_node *lambda_closure;
+    Node *bound_variable;
+    environment *env;
+    int child_count;
+    control_node(Node *n = nullptr, control_node *l = nullptr, Node *b = nullptr, environment *e = nullptr, int c = 0) : node(n), next(nullptr), lambda_closure(l), bound_variable(b), env(e), child_count(c) {}
 };
 
-vector<vector<ControlNode *>>
-getControlStruct(Node *root);
-void execute(vector<vector<ControlNode *>> contStruc);
+void generateControlStruct(Node *node, control_node *ctrl_node);
+void print_control_node(control_node *ctrl_node);
 
 #endif
