@@ -39,6 +39,8 @@ struct control_node;
 struct environment
 {
     unordered_map<string, exec_node *> bound_variable;
+    environment *parent;
+    environment(environment *p = nullptr) : parent(p) {}
 };
 
 struct exec_node
@@ -49,7 +51,7 @@ struct exec_node
     string str_val;
     environment *env_val;
     control_node *ctrl_node_val;
-    queue<exec_node *> *queue_val;
+    queue<exec_node *> queue_val;
     primitive_function primitive_func_val;
 };
 
@@ -66,5 +68,12 @@ struct control_node
 
 void generateControlStruct(Node *node, control_node *ctrl_node);
 void print_control_node(control_node *ctrl_node);
+exec_node *checkEnvironment(string key, environment *env);
+void initializeCSE(control_node *ctrl_node);
+void load(control_node *ctrl_node);
+void insert(string key, exec_node *value, environment *env);
+void execute();
+void print_tuple(exec_node *tuple);
+void print_exec_node(exec_node *exec_node);
 
 #endif

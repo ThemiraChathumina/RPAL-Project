@@ -1,1 +1,6 @@
-Print((fn x.x-1)4*2)
+let Number = 1101
+in let mod x y = x - (y * (x / y)) in
+let rec reverse_num(t,r) = 
+t eq 0 -> r | reverse_num(t/10,r*10 + mod t 10) in
+let is_palindrome N = (N eq reverse_num(N,0)) -> 'Palindrome' | 'Not a palindrome'
+in Print(is_palindrome(Number))

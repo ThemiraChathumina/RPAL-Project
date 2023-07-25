@@ -3,5 +3,6 @@
         "iostream": "cpp",
         "unordered_set": "cpp",
         "new": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
