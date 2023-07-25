@@ -39,7 +39,7 @@ void Read(string expected)
     next_token = tokens[token_index++];
 }
 
-void Build_tree(string x, int n)
+void Build_tree(string x, int n, ASTType type)
 {
     Node *p = nullptr;
     for (int i = 1; i <= n; i++)
@@ -49,7 +49,7 @@ void Build_tree(string x, int n)
         c->right = p;
         p = c;
     }
-    nodeStack.push(new Node(x, NAN, p, nullptr));
+    nodeStack.push(new Node(x, type, p, nullptr));
 }
 
 void D();
@@ -83,7 +83,7 @@ void E()
         D();
         Read("in");
         E();
-        Build_tree("let", 2);
+        Build_tree("let", 2, LET);
     }
     else if (next_token.value == "fn")
     {
@@ -96,7 +96,7 @@ void E()
         }
         Read(".");
         E();
-        Build_tree("lambda", n + 1);
+        Build_tree("lambda", n + 1, LAMBDA);
     }
     else
     {
@@ -111,7 +111,7 @@ void Ew()
     {
         Read("where");
         Dr();
-        Build_tree("where", 2);
+        Build_tree("where", 2, WHERE);
     }
 }
 
@@ -127,7 +127,7 @@ void T()
     }
     if (n > 0)
     {
-        Build_tree("tau", n + 1);
+        Build_tree("tau", n + 1, TAU);
     }
 }
 
@@ -138,7 +138,7 @@ void Ta()
     {
         Read("aug");
         Tc();
-        Build_tree("aug", 2);
+        Build_tree("aug", 2, AUG);
     }
 }
 
@@ -151,7 +151,7 @@ void Tc()
         Tc();
         Read("|");
         Tc();
-        Build_tree("->", 3);
+        Build_tree("->", 3, COND);
     }
 }
 
@@ -164,7 +164,7 @@ void B()
     {
         Read("or");
         Bt();
-        Build_tree("or", 2);
+        Build_tree("or", 2, OR);
     }
 }
 
@@ -177,7 +177,7 @@ void Bt()
     {
         Read("&");
         Bs();
-        Build_tree("&", 2);
+        Build_tree("&", 2, AMP);
     }
 }
 
@@ -189,7 +189,7 @@ void Bs()
     {
         Read("not");
         Bp();
-        Build_tree("not", 1);
+        Build_tree("not", 1, NOT);
     }
     else
     {
@@ -211,37 +211,37 @@ void Bp()
     {
         Read(next_token.value);
         A();
-        Build_tree("gr", 2);
+        Build_tree("gr", 2, GR);
     }
     else if ((next_token.value == "ge") || next_token.value == ">=")
     {
         Read(next_token.value);
         A();
-        Build_tree("ge", 2);
+        Build_tree("ge", 2, GE);
     }
     else if ((next_token.value == "ls") || next_token.value == "<")
     {
         Read(next_token.value);
         A();
-        Build_tree("ls", 2);
+        Build_tree("ls", 2, LS);
     }
     else if ((next_token.value == "le") || next_token.value == "<=")
     {
         Read(next_token.value);
         A();
-        Build_tree("le", 2);
+        Build_tree("le", 2, LE);
     }
     else if (next_token.value == "eq")
     {
         Read(next_token.value);
         A();
-        Build_tree("eq", 2);
+        Build_tree("eq", 2, EQ);
     }
     else if (next_token.value == "ne")
     {
         Read(next_token.value);
         A();
-        Build_tree("ne", 2);
+        Build_tree("ne", 2, NE);
     }
 }
 
@@ -262,7 +262,7 @@ void A()
     {
         Read("-");
         At();
-        Build_tree("neg", 1);
+        Build_tree("neg", 1, NEG);
     }
     else
     {
@@ -273,7 +273,10 @@ void A()
         string op = next_token.value;
         Read(op);
         At();
-        Build_tree(op, 2);
+        if (op == "-")
+            Build_tree(op, 2, MINUS);
+        else
+            Build_tree(op, 2, PLUS);
     }
 }
 
@@ -288,7 +291,10 @@ void At()
         string op = next_token.value;
         Read(op);
         Af();
-        Build_tree(op, 2);
+        if (op == "*")
+            Build_tree(op, 2, MULTI);
+        else
+            Build_tree(op, 2, DIV);
     }
 }
 
@@ -301,7 +307,7 @@ void Af()
     {
         Read("**");
         Af();
-        Build_tree("**", 2);
+        Build_tree("**", 2, EXPO);
     }
 }
 
@@ -313,10 +319,28 @@ void Ap()
     while (next_token.value == "@")
     {
         Read("@");
-        nodeStack.push(new Node(next_token.value, next_token.type));
+        ASTType type;
+        if (next_token.type == IDENTIFIER && !isKeyWord(next_token.value))
+        {
+            type = IDT;
+        }
+        else if (next_token.type == INTEGER)
+        {
+            type = INT;
+        }
+        else if (next_token.type == STRING)
+        {
+            type = STR;
+        }
+        else
+        {
+            cout << "Error: unexpected token " << endl;
+            exit(1);
+        }
+        nodeStack.push(new Node(next_token.value, type));
         Read(next_token.value);
         R();
-        Build_tree("@", 3);
+        Build_tree("@", 3, AT);
     }
 }
 
@@ -330,7 +354,7 @@ void R()
            next_token.value == "(" || next_token.value == "dummy")
     {
         Rn();
-        Build_tree("gamma", 2);
+        Build_tree("gamma", 2, GAMMA);
     }
 }
 
@@ -346,7 +370,25 @@ void Rn()
 {
     if ((next_token.type == IDENTIFIER && !isKeyWord(next_token.value)) || next_token.type == INTEGER || next_token.type == STRING)
     {
-        nodeStack.push(new Node(next_token.value, next_token.type));
+        ASTType type;
+        if (next_token.type == IDENTIFIER && !isKeyWord(next_token.value))
+        {
+            type = IDT;
+        }
+        else if (next_token.type == INTEGER)
+        {
+            type = INT;
+        }
+        else if (next_token.type == STRING)
+        {
+            type = STR;
+        }
+        else
+        {
+            cout << "Error: unexpected token " << endl;
+            exit(1);
+        }
+        nodeStack.push(new Node(next_token.value, type));
         Read(next_token.value);
     }
     else if (next_token.value == "(")
@@ -358,22 +400,22 @@ void Rn()
     else if (next_token.value == "true")
     {
         Read("true");
-        Build_tree("true", 0);
+        Build_tree("true", 0, TRUE);
     }
     else if (next_token.value == "false")
     {
         Read("false");
-        Build_tree("false", 0);
+        Build_tree("false", 0, FALSE);
     }
     else if (next_token.value == "nil")
     {
         Read("nil");
-        Build_tree("nil", 0);
+        Build_tree("nil", 0, NIL);
     }
     else
     {
         Read("dummy");
-        Build_tree("dummy", 0);
+        Build_tree("dummy", 0, DUMMY);
     }
 }
 
@@ -386,7 +428,7 @@ void D()
     {
         Read("within");
         D();
-        Build_tree("within", 2);
+        Build_tree("within", 2, WITHIN);
     }
 }
 
@@ -404,7 +446,7 @@ void Da()
     }
     if (n > 0)
     {
-        Build_tree("and", n + 1);
+        Build_tree("and", n + 1, AND);
     }
 }
 
@@ -416,7 +458,7 @@ void Dr()
     {
         Read("rec");
         Db();
-        Build_tree("rec", 1);
+        Build_tree("rec", 1, REC);
     }
     else
     {
@@ -437,14 +479,32 @@ void Db()
     }
     else if (next_token.type == IDENTIFIER && !isKeyWord(next_token.value))
     {
-        nodeStack.push(new Node(next_token.value, next_token.type));
+        ASTType type;
+        if (next_token.type == IDENTIFIER && !isKeyWord(next_token.value))
+        {
+            type = IDT;
+        }
+        else if (next_token.type == INTEGER)
+        {
+            type = INT;
+        }
+        else if (next_token.type == STRING)
+        {
+            type = STR;
+        }
+        else
+        {
+            cout << "Error: unexpected token " << endl;
+            exit(1);
+        }
+        nodeStack.push(new Node(next_token.value, type));
         Read(next_token.value);
         if (next_token.value == "," || next_token.value == "=")
         {
             Vl();
             Read("=");
             E();
-            Build_tree("=", 2);
+            Build_tree("=", 2, EQUAL);
         }
         else
         {
@@ -456,7 +516,7 @@ void Db()
             }
             Read("=");
             E();
-            Build_tree("fcn_form", n + 2);
+            Build_tree("fcn_form", n + 2, FUN_FORM);
         }
     }
 }
@@ -469,13 +529,31 @@ void Vl()
     {
         n++;
         Read(",");
-        nodeStack.push(new Node(next_token.value, next_token.type));
+        ASTType type;
+        if (next_token.type == IDENTIFIER && !isKeyWord(next_token.value))
+        {
+            type = IDT;
+        }
+        else if (next_token.type == INTEGER)
+        {
+            type = INT;
+        }
+        else if (next_token.type == STRING)
+        {
+            type = STR;
+        }
+        else
+        {
+            cout << "Error: unexpected token " << endl;
+            exit(1);
+        }
+        nodeStack.push(new Node(next_token.value, type));
         Read(next_token.value);
     }
 
     if (n > 1)
     {
-        Build_tree(",", n);
+        Build_tree(",", n, COMMA);
     }
 }
 
@@ -486,7 +564,25 @@ void Vb()
 {
     if ((next_token.type == IDENTIFIER && !isKeyWord(next_token.value)))
     {
-        nodeStack.push(new Node(next_token.value, next_token.type));
+        ASTType type;
+        if (next_token.type == IDENTIFIER && !isKeyWord(next_token.value))
+        {
+            type = IDT;
+        }
+        else if (next_token.type == INTEGER)
+        {
+            type = INT;
+        }
+        else if (next_token.type == STRING)
+        {
+            type = STR;
+        }
+        else
+        {
+            cout << "Error: unexpected token " << endl;
+            exit(1);
+        }
+        nodeStack.push(new Node(next_token.value, type));
         Read(next_token.value);
     }
     else if (next_token.value == "(")
@@ -495,11 +591,29 @@ void Vb()
         if (next_token.value == ")")
         {
             Read(")");
-            Build_tree("()", 2);
+            Build_tree("()", 2, PARAN);
         }
         else
         {
-            nodeStack.push(new Node(next_token.value, next_token.type));
+            ASTType type;
+            if (next_token.type == IDENTIFIER && !isKeyWord(next_token.value))
+            {
+                type = IDT;
+            }
+            else if (next_token.type == INTEGER)
+            {
+                type = INT;
+            }
+            else if (next_token.type == STRING)
+            {
+                type = STR;
+            }
+            else
+            {
+                cout << "Error: unexpected token " << endl;
+                exit(1);
+            }
+            nodeStack.push(new Node(next_token.value, type));
             Read(next_token.value);
             Vl();
             Read(")");
@@ -513,18 +627,28 @@ void print_tree(Node *node, int indent = 0)
         return;
     for (int i = 0; i < indent; i++)
         cout << ".";
-    if (node->type == NAN)
+    if (node->type != IDT && node->type != INT && node->type != STR && node->type != DUMMY && node->type != TRUE && node->type != FALSE && node->type != NIL && node->type != YSTAR)
     {
         cout << node->value << endl;
     }
     else
     {
-        if (node->type == IDENTIFIER)
+        if (node->type == IDT)
             cout << "<ID:" << node->value << ">" << endl;
-        else if (node->type == INTEGER)
+        else if (node->type == INT)
             cout << "<INT:" << node->value << ">" << endl;
-        else if (node->type == STRING)
+        else if (node->type == STR)
             cout << "<STR:'" << node->value << "'>" << endl;
+        else if (node->type == DUMMY)
+            cout << "<DUMMY>" << endl;
+        else if (node->type == TRUE)
+            cout << "<TRUE>" << endl;
+        else if (node->type == FALSE)
+            cout << "<FALSE>" << endl;
+        else if (node->type == NIL)
+            cout << "<NIL>" << endl;
+        else if (node->type == YSTAR)
+            cout << "<Y*>" << endl;
     }
     print_tree(node->left, indent + 1);
     print_tree(node->right, indent);
