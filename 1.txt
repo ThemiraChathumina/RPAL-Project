@@ -1,1 +1,2 @@
-let f x y z = x + y + z in Print(f 1 2 3)
+let oddEven x = x- (x/2)*2 eq 1 -> 'Odd' | 'Even' 
+in print(oddEven 17) 
