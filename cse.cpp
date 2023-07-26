@@ -35,12 +35,12 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
             temp_ctrl_node->bound_variable->right = NULL; // there could only be one variable
         }
         else
-            temp_ctrl_node->bound_variable = node->left->left; // if this is comman it would be left child of left child
+            temp_ctrl_node->bound_variable = node->left->left; // if this is comma it would be left child of left child
 
         ctrl_node->next = temp_ctrl_node;
         ctrl_node = ctrl_node->next; // move forward
 
-        control_node *new_cs = new control_node;   // yeah design sucks. this will be a memory leak - NOPE resolved it :)
+        control_node *new_cs = new control_node;
         generateControlStruct(save_right, new_cs); // this  will return the control struct of right child
         // link the new cs
         ctrl_node->lambda_closure = new_cs->next;
@@ -83,9 +83,6 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
     }
 
     // else if node is conditional. this case won't have any left  child only right sibling
-    /* if node is CONDITIONAL it breaks the B, T & E part from the right sibling list
-       otherwise due to this procedure being a recurisive it will automatically generate the
-       control structure for B, T & E */
     else if (node->type == COND)
     {
         // Break the B, T & E and save each of them
@@ -110,7 +107,6 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         // break all right siblings
         temp_B->right = NULL;
         temp_T->right = NULL;
-        // temp_E should already be NULL
 
         // need to generate lambda_closure_then control structure
         // create new AST node of DELTA_THEN type
@@ -145,16 +141,6 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         temp_beta_cs->node = temp_beta;
         ctrl_node->next = temp_beta_cs;
         ctrl_node = ctrl_node->next;
-
-        // generate control struct for B
-        // Node *temp_lambda_closure_b= new Node;
-        // temp_lambda_closure_b->set_node_type(DELTA_ELSE);
-        // temp_lambda_closure_then->set_node_value("lambda_closure");
-        // create new control struct
-        // temp_ctrl_node = new control_node;
-        // temp_ctrl_node->node = temp_B;
-        // ctrl_node->next = temp_ctrl_node; //link the newly created control struct in the list
-        // generate control struct for temp_T;
         control_node *temp_ctrl_nodetruct_B = new control_node;
         generateControlStruct(temp_B, temp_ctrl_nodetruct_B); // temp_cntst's next have control struct
         ctrl_node->next = temp_ctrl_nodetruct_B->next;
@@ -181,7 +167,7 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         // recursively do the same for both left and right
         if (node->left != NULL)                           // will generate only one CS node
             generateControlStruct(node->left, ctrl_node); // this will automatically change the value of ctrl_node
-        while (ctrl_node->next != NULL)                   // introducing inefficiency. couldn't resolve the design issue :(
+        while (ctrl_node->next != NULL)
             ctrl_node = ctrl_node->next;
         if (node->right != NULL)
             generateControlStruct(node->right, ctrl_node);
@@ -324,34 +310,6 @@ void print_ast_node(Node *in_node)
         exit(0);
     }
     cout << ":" << in_node->value << ">" << endl;
-}
-
-void print_control_node(control_node *ctrl_node)
-{
-    // control_node *temp = ctrl_node->next;
-    cout << "===========================================================" << endl;
-    while (ctrl_node != NULL)
-    {
-        // cout<<"[ "<<ctrl_node->node->type<<": "<<ctrl_node->node->value<<" ]"<<endl;
-        print_ast_node(ctrl_node->node);
-        if (ctrl_node->node->type == TAU)
-            cout << "Number of children: " << ctrl_node->child_count << endl;
-
-        Node *temp_bv = ctrl_node->bound_variable;
-        while (temp_bv != NULL)
-        {
-            cout << "\t";
-            cout << " (" << temp_bv->value << ")";
-            temp_bv = temp_bv->right;
-        }
-        cout << endl;
-        // cout<<"\n----------------------------------------------------"<<endl;
-
-        if (ctrl_node->lambda_closure != NULL)
-            print_control_node(ctrl_node->lambda_closure);
-        ctrl_node = ctrl_node->next;
-    }
-    cout << "============================================================" << endl;
 }
 
 void print_exec_node(exec_node *in_element);
@@ -521,7 +479,7 @@ void insert(string key, exec_node *value, environment *env)
 void execute()
 {
     // while control is not empty
-    while (control_stack.empty() != true)
+    while (control_stack.size() > 2)
     {
         // pop an element from control stack
         control_node *popped_cntrl_st = control_stack.top();

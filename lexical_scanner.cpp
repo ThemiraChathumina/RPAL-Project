@@ -113,7 +113,8 @@ vector<Token> tokenizeFile(string fileName)
     ifstream inputFile(fileName);
     string input((istreambuf_iterator<char>(inputFile)), istreambuf_iterator<char>());
     inputFile.close();
-
+    // Append a new line character at the end of the input string
+    input += '\n';
     // Strip initial white spaces, new lines, end of lines, and horizontal tabs
     int i = 0;
     while (isspace(input[i]))
