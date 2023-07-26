@@ -3,17 +3,14 @@
 #include "ast.h"
 #include <iostream>
 #include "cse.h"
-
-int main()
+using namespace std;
+int main(int argc, char **argv)
 {
 
-    Node *root = getST("1.txt");
-    // Node *root = get_sample();
-    // printAST(root);
+    string filename = argv[argc - 1];
+    Node *root = getST(filename);
     control_node temp;
     generateControlStruct(root, &temp);
-    // control_node *temp2 = temp.next;
-    // print_control_node(temp2);
     initializeCSE(&temp);
     execute();
     return 0;

@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++11
 
 # Define the name of the executable
-EXE = cse
+EXE = rpal20
 
 # Define the source files
 SRCS = test5.cpp cse.cpp st.cpp ast.cpp lexical_scanner.cpp

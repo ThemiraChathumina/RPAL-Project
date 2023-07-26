@@ -1,2 +1,16 @@
-let oddEven x = x- (x/2)*2 eq 1 -> 'Odd' | 'Even' 
-in print(oddEven 17) 
+let string = 'abc' and
+n = 2 and m = 2 in
+let concatenate(y,z) = Conc a b where (a = y and b = z) in
+let rec len(s) = s eq '' -> 0 | 1 + len(Stern(s)) in
+let substring s n m =
+not Isstring s -> 's is not a string' |
+not Isinteger n -> 'n is not an integer' |
+not Isinteger m -> 'm is not an integer' | 
+n < 1 or n > len(s) -> 'n is out of range' | 
+m < 0 or n + m  - 1 > len(s) -> 'm is out of range' |
+extractString(s,n,m) where
+rec extractString(s,n,m) = 
+m eq 0 -> '' |
+n eq 1 -> concatenate(Stem(s),extractString(Stern(s),n,m-1))|
+extractString(Stern(s),n-1,m)
+in Print(substring string n m)

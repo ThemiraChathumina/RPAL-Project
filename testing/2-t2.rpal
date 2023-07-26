@@ -1,0 +1,4 @@
+let N = (-2,-7,-1)
+in let max(x,y) = x ls y -> y | x
+in let greatest(a,b,c) = max(max(a,b),max(a,c))
+in Print(greatest(N))
