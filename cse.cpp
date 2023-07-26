@@ -3,8 +3,19 @@
 #include <iostream>
 #include <sstream>
 #include <tuple>
+#include <string>
 
 using namespace std;
+
+bool compareFirstCharactersEQ(const string &str1, const string &str2)
+{
+    return str1[0] >= str2[0];
+}
+
+bool compareFirstCharactersNEQ(const string &str1, const string &str2)
+{
+    return str1[0] > str2[0];
+}
 
 void generateControlStruct(Node *node, control_node *ctrl_node)
 {
@@ -1585,12 +1596,13 @@ void execute()
                  popped_cntrl_st->node->type == PLUS ||
                  (popped_cntrl_st->node->type == MINUS) ||
                  (popped_cntrl_st->node->type == GR) ||
+                 (popped_cntrl_st->node->type == GE) ||
                  (popped_cntrl_st->node->type == LE) ||
                  (popped_cntrl_st->node->type == MULTI) || (popped_cntrl_st->node->type == LS))
         {
             exec_node *temp_pop_1 = exec_stack.top();
             // this should not be NULL and should be integer
-            if (temp_pop_1 == NULL || temp_pop_1->type != EXEC_INT)
+            if (temp_pop_1 == NULL || (temp_pop_1->type != EXEC_INT && temp_pop_1->type != EXEC_STR))
             {
                 cout << "ERROR - Processing DIV/PLUS: First Element on execution stack is either not INTEGER or there is no element !" << endl;
                 exit(0);
@@ -1600,7 +1612,8 @@ void execute()
             exec_node *temp_pop_2 = exec_stack.top(); // pop second element
 
             // both should not be NULL and should be integers
-            if (temp_pop_2 == NULL || temp_pop_2->type != EXEC_INT)
+            if (temp_pop_2 == NULL || (temp_pop_2->type != temp_pop_1->type))
+
             {
                 cout << "ERROR - Processing DIV/PLUS: Second Element on execution stack is either not INTEGER or there is no element !" << endl;
                 // cout<<"ERROR:While Processing DIV operator - Was expecting two integers on execution stack but got less than that "<<endl;
@@ -1611,31 +1624,69 @@ void execute()
 
             // perform calculation
             int temp_result;
-            if (popped_cntrl_st->node->type == DIV)
-                temp_result = (temp_pop_1->int_val) / (temp_pop_2->int_val);
 
-            else if (popped_cntrl_st->node->type == PLUS)
-                temp_result = (temp_pop_1->int_val) + (temp_pop_2->int_val);
-
-            else if (popped_cntrl_st->node->type == MINUS)
-                temp_result = (temp_pop_1->int_val) - (temp_pop_2->int_val);
-
-            else if (popped_cntrl_st->node->type == MULTI)
-                temp_result = (temp_pop_1->int_val) * (temp_pop_2->int_val);
-
-            else if (popped_cntrl_st->node->type == GR)
+            if (popped_cntrl_st->node->type == GR)
+            {
                 temp_result = (temp_pop_1->int_val) > (temp_pop_2->int_val);
+                if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
+                {
+                    temp_result = compareFirstCharactersNEQ(temp_pop_1->str_val, temp_pop_2->str_val);
+                }
+            }
+
+            else if (popped_cntrl_st->node->type == GE)
+            {
+                temp_result = (temp_pop_1->int_val) >= (temp_pop_2->int_val);
+                if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
+                {
+                    temp_result = compareFirstCharactersEQ(temp_pop_1->str_val, temp_pop_2->str_val);
+                }
+            }
 
             else if (popped_cntrl_st->node->type == LE)
+            {
                 temp_result = (temp_pop_1->int_val) <= (temp_pop_2->int_val);
+                if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
+                {
+                    temp_result = compareFirstCharactersEQ(temp_pop_2->str_val, temp_pop_1->str_val);
+                }
+            }
 
             else if (popped_cntrl_st->node->type == LS)
+            {
                 temp_result = (temp_pop_1->int_val) < (temp_pop_2->int_val);
+                if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
+                {
+                    temp_result = compareFirstCharactersNEQ(temp_pop_2->str_val, temp_pop_1->str_val);
+                }
+            }
+
+            else
+            {
+
+                if (temp_pop_1->type != EXEC_INT)
+                {
+                    cout << "ERROR - Processing DIV/PLUS: First Element on execution stack is either not INTEGER or there is no element !" << endl;
+                    exit(0);
+                }
+
+                else if (popped_cntrl_st->node->type == DIV)
+                    temp_result = (temp_pop_1->int_val) / (temp_pop_2->int_val);
+
+                else if (popped_cntrl_st->node->type == PLUS)
+                    temp_result = (temp_pop_1->int_val) + (temp_pop_2->int_val);
+
+                else if (popped_cntrl_st->node->type == MINUS)
+                    temp_result = (temp_pop_1->int_val) - (temp_pop_2->int_val);
+
+                else if (popped_cntrl_st->node->type == MULTI)
+                    temp_result = (temp_pop_1->int_val) * (temp_pop_2->int_val);
+            }
 
             // create new exec_node. btw we don't need the popped ones anymore
             exec_node *new_exe_ele = new exec_node;
 
-            if (popped_cntrl_st->node->type == GR || (popped_cntrl_st->node->type == LE) || (popped_cntrl_st->node->type == LS))
+            if (popped_cntrl_st->node->type == GR || popped_cntrl_st->node->type == GE || (popped_cntrl_st->node->type == LE) || (popped_cntrl_st->node->type == LS))
             {
                 if (temp_result)
                     new_exe_ele->type = EXEC_TRUE;

@@ -1,4 +1,6 @@
 #include "st.h"
+#include <iostream>
+using namespace std;
 
 // the binary tree is a first-child, next-sibling tree. So change nodes according to it.
 
@@ -275,6 +277,8 @@ Node *standardize_and(Node *node)
     }
     Node *new_comma = nullptr, *new_tau = nullptr, *temp = nullptr;
 
+    node->type = EQUAL;
+    node->value = "=";
     new_comma = new Node(",", COMMA);
     new_tau = new Node("tau", TAU);
 

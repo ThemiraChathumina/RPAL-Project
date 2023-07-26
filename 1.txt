@@ -1,6 +1,16 @@
-let Number = 1101
-in let mod x y = x - (y * (x / y)) in
-let rec reverse_num(t,r) = 
-t eq 0 -> r | reverse_num(t/10,r*10 + mod t 10) in
-let is_palindrome N = (N eq reverse_num(N,0)) -> 'Palindrome' | 'Not a palindrome'
-in Print(is_palindrome(Number))
+let string = 'abc' and
+n = 2 and m = 2 in
+let concatenate(y,z) = Conc a b where (a = y and b = z) in
+let rec len(s) = s eq '' -> 0 | 1 + len(Stern(s)) in
+let substring s n m =
+not Isstring s -> 's is not a string' |
+not Isinteger n -> 'n is not an integer' |
+not Isinteger m -> 'm is not an integer' | 
+n < 1 or n > len(s) -> 'n is out of range' | 
+m < 0 or n + m  - 1 > len(s) -> 'm is out of range' |
+extractString(s,n,m) where
+rec extractString(s,n,m) = 
+m eq 0 -> '' |
+n eq 1 -> concatenate(Stem(s),extractString(Stern(s),n,m-1))|
+extractString(Stern(s),n-1,m)
+in Print(substring string n m)

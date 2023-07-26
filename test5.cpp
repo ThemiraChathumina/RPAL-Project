@@ -3,11 +3,11 @@
 #include "ast.h"
 #include <iostream>
 #include "cse.h"
-
-int main()
+using namespace std;
+int main(int argc, char **argv)
 {
-
-    Node *root = getST("1.txt");
+    string filename = argv[1];
+    Node *root = getST(filename);
     // Node *root = get_sample();
     // printAST(root);
     control_node temp;
