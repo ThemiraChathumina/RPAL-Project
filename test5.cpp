@@ -6,7 +6,6 @@
 using namespace std;
 int main(int argc, char **argv)
 {
-
     string filename = argv[argc - 1];
     Node *root = getST(filename);
     control_node temp;

@@ -34,7 +34,7 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
             temp_ctrl_node->bound_variable->right = NULL; 
         }
         else
-            temp_ctrl_node->bound_variable = node->left->left; // if this is comman it would be left child of left child
+            temp_ctrl_node->bound_variable = node->left->left; // if this is comma it would be left child of left child
 
         ctrl_node->next = temp_ctrl_node;
         ctrl_node = ctrl_node->next; // move forward
@@ -82,7 +82,6 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
     }
 
     // else if node is conditional. this case won't have any left  child only right sibling
-
     else if (node->type == COND)
     {
         // Break the B, T & E and save each of them
@@ -107,7 +106,6 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         // break all right siblings
         temp_B->right = NULL;
         temp_T->right = NULL;
-        // temp_E should already be NULL
 
         // need to generate lambda_closure_then control structure
         // create new AST node of DELTA_THEN type
@@ -142,7 +140,6 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         temp_beta_cs->node = temp_beta;
         ctrl_node->next = temp_beta_cs;
         ctrl_node = ctrl_node->next;
-
         control_node *temp_ctrl_nodetruct_B = new control_node;
         generateControlStruct(temp_B, temp_ctrl_nodetruct_B); // temp_cntst's next have control struct
         ctrl_node->next = temp_ctrl_nodetruct_B->next;
