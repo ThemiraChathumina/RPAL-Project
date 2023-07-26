@@ -480,7 +480,7 @@ void insert(string key, exec_node *value, environment *env)
 void execute()
 {
     // while control is not empty
-    while (control_stack.empty() != true)
+    while (control_stack.size() > 2)
     {
         // pop an element from control stack
         control_node *popped_ctrl_node = control_stack.top();
