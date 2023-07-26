@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <queue>
 
-enum exec_type
+enum exec_type //these are the types of nodes in the execution stack 
 {
     EXEC_ENV,
     EXEC_INT,

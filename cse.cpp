@@ -24,7 +24,6 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         return;
     }
 
-    // if node is lambda. this case won't have any left  child only right sibling
     if (node->type == LAMBDA)
     {
         control_node *temp_ctrl_node = new control_node(node);
@@ -32,7 +31,7 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         if (node->left->type != COMMA)
         {
             temp_ctrl_node->bound_variable = node->left;  // if this is comma it would be left child of left child
-            temp_ctrl_node->bound_variable->right = NULL; // there could only be one variable
+            temp_ctrl_node->bound_variable->right = NULL; 
         }
         else
             temp_ctrl_node->bound_variable = node->left->left; // if this is comma it would be left child of left child
@@ -40,8 +39,8 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         ctrl_node->next = temp_ctrl_node;
         ctrl_node = ctrl_node->next; // move forward
 
-        control_node *new_cs = new control_node;
-        generateControlStruct(save_right, new_cs); // this  will return the control struct of right child
+        control_node *new_cs = new control_node;   
+        generateControlStruct(save_right, new_cs); 
         // link the new cs
         ctrl_node->lambda_closure = new_cs->next;
 
@@ -167,14 +166,14 @@ void generateControlStruct(Node *node, control_node *ctrl_node)
         // recursively do the same for both left and right
         if (node->left != NULL)                           // will generate only one CS node
             generateControlStruct(node->left, ctrl_node); // this will automatically change the value of ctrl_node
-        while (ctrl_node->next != NULL)
+        while (ctrl_node->next != NULL)                   
             ctrl_node = ctrl_node->next;
         if (node->right != NULL)
             generateControlStruct(node->right, ctrl_node);
     }
 }
 
-void print_ast_node(Node *in_node)
+void print_node(Node *in_node)
 {
     cout << "<";
     switch (in_node->type)
@@ -283,9 +282,6 @@ void print_ast_node(Node *in_node)
         cout << "DUMMY";
         break;
 
-        /*case EQUAL: cout<<"EQUAL";
-              break; */
-
     case YSTAR:
         cout << "YSTAR";
         break;
@@ -306,7 +302,7 @@ void print_ast_node(Node *in_node)
         cout << "ENVIRONMENT";
         break;
     default:
-        cerr << "Some other type of node !! - " << in_node->type << endl;
+        cerr << "Some other type of node." << in_node->type << endl;
         exit(0);
     }
     cout << ":" << in_node->value << ">" << endl;
@@ -314,26 +310,26 @@ void print_ast_node(Node *in_node)
 
 void print_exec_node(exec_node *in_element);
 
-void print_tuple(exec_node *tupple)
+void print_tuple(exec_node *tuple)
 {
     queue<exec_node *> temp_tupples;
     cout << "(";
-    while ((tupple->queue_val).size() != 0)
+    while ((tuple->queue_val).size() != 0)
     {
         // pop an element from queue
-        exec_node *temp_tuple = (tupple->queue_val).front();
+        exec_node *temp_tuple = (tuple->queue_val).front();
 
         // call print_execution_element
         if (temp_tuple != NULL)
         {
             print_exec_node(temp_tuple);
-            if ((tupple->queue_val).size() != 1)
+            if ((tuple->queue_val).size() != 1)
                 cout << ", ";
         }
 
         // save it in another queue
         temp_tupples.push(temp_tuple);
-        (tupple->queue_val).pop();
+        (tuple->queue_val).pop();
     }
 
     // print )
@@ -341,7 +337,7 @@ void print_tuple(exec_node *tupple)
     // push back all the elements
     while (temp_tupples.size() != 0)
     {
-        (tupple->queue_val).push(temp_tupples.front());
+        (tuple->queue_val).push(temp_tupples.front());
         temp_tupples.pop();
     }
 }
@@ -360,7 +356,7 @@ void print_exec_node(exec_node *in_element)
         cout << in_element->int_val;
         break;
 
-    case EXEC_STR: // printf("%c", (in_element->str_val).c_str());
+    case EXEC_STR: 
         for (int i = 0; i < (int)((in_element->str_val).size()); i++)
         {
             if ((in_element->str_val)[i] == '\\')
@@ -375,13 +371,13 @@ void print_exec_node(exec_node *in_element)
             else
                 cout << (in_element->str_val)[i];
         }
-        // cout<<in_element->str_val<<endl;
+        
         break;
     case EXEC_ENV:
         cout << "<ENVIRONMENT>" << endl;
         break;
 
-    case EXEC_TUPPLE: // cout<<"<PRINTING TUPPLE>"<<endl;
+    case EXEC_TUPPLE: 
         print_tuple(in_element);
         break;
     case EXEC_CTRL_STRUCT:
@@ -413,7 +409,7 @@ void print_exec_node(exec_node *in_element)
         break;
 
     default:
-        cout << "print_execution_element - Some other type !! " << endl;
+        cout << "print_execution_element - Some other type." << endl;
     }
 }
 
@@ -448,7 +444,8 @@ void initializeCSE(control_node *ctrl_node)
     }
 }
 
-void load(control_node *lambda_closure)
+
+void load(control_node *lambda_closure) //loads control structure to control stack
 {
     while (lambda_closure != NULL)
     {
@@ -457,7 +454,8 @@ void load(control_node *lambda_closure)
     }
 }
 
-exec_node *checkEnvironment(string key, environment *env)
+
+exec_node *checkEnvironment(string key, environment *env)	//traverses the enviroment tree and finds the value of a variable
 {
     if (env->bound_variable[key] != NULL)
     {
@@ -482,24 +480,24 @@ void execute()
     while (control_stack.size() > 2)
     {
         // pop an element from control stack
-        control_node *popped_cntrl_st = control_stack.top();
+        control_node *popped_ctrl_node = control_stack.top();
         control_stack.pop();
-        // print_ast_node(popped_cntrl_st->node);
+        // print_node(popped_ctrl_node->node);
         // apply rules
-        if (popped_cntrl_st->node->type == INT)
+        if (popped_ctrl_node->node->type == INT)
         { // if node is INTEGER
             // create new exec_node
             exec_node *new_exe_ele = new exec_node();
             new_exe_ele->type = EXEC_INT; // set type
 
             // convert string value to int
-            int temp_int = atoi((popped_cntrl_st->node->value).c_str());
+            int temp_int = atoi((popped_ctrl_node->node->value).c_str());
             new_exe_ele->int_val = temp_int;
             // push the new exec_node on exeuction stack
             exec_stack.push(new_exe_ele);
         }
 
-        else if (popped_cntrl_st->node->type == NIL)
+        else if (popped_ctrl_node->node->type == NIL)
         {
 
             exec_node *new_nil = new exec_node;
@@ -507,7 +505,7 @@ void execute()
             exec_stack.push(new_nil);
         }
 
-        else if (popped_cntrl_st->node->type == DUMMY)
+        else if (popped_ctrl_node->node->type == DUMMY)
         {
 
             exec_node *new_dummy = new exec_node;
@@ -515,51 +513,44 @@ void execute()
             exec_stack.push(new_dummy);
         }
 
-        // TRUE
-        else if (popped_cntrl_st->node->type == TRUE)
+        else if (popped_ctrl_node->node->type == TRUE)
         {
             exec_node *new_true = new exec_node;
             new_true->type = EXEC_TRUE;
             exec_stack.push(new_true);
         }
-        // FALSE
-        else if (popped_cntrl_st->node->type == FALSE)
+
+        else if (popped_ctrl_node->node->type == FALSE)
         {
             exec_node *new_false = new exec_node;
             new_false->type = EXEC_FALSE;
             exec_stack.push(new_false);
         }
-        else if (popped_cntrl_st->node->type == STR)
+        else if (popped_ctrl_node->node->type == STR)
         { // if node is STRING
 
             // create new exec_node
             exec_node *new_exe_ele = new exec_node();
             new_exe_ele->type = EXEC_STR; // set type
 
-            /*//convert string value to int
-            int temp_int = atoi( (popped_cntrl_st->node->value ).c_str() ); */
 
-            new_exe_ele->str_val = popped_cntrl_st->node->value;
+            new_exe_ele->str_val = popped_ctrl_node->node->value;
             // push the new exec_node on exeuction stack
             exec_stack.push(new_exe_ele);
-
-            // delete the control stack
-            // delete popped_cntrl_st;
         }
 
         // if node is IDENTIFIER
-        else if (popped_cntrl_st->node->type == IDT)
+        else if (popped_ctrl_node->node->type == IDT)
         {
 
             // lookup in current environment
-            exec_node *idt_exe_ele = checkEnvironment(popped_cntrl_st->node->value, current_environment);
+            exec_node *idt_exe_ele = checkEnvironment(popped_ctrl_node->node->value, current_environment);
 
             // if lookup is unsuccessfull it might be primitive function
             if (idt_exe_ele == NULL)
             {
                 // check if its primitive function
-                /* NOTE - I AM ASSUMING THAT PRIMTIVE FUNCTIONS ARE CASE SENSTITIVE SO print IS NOT A PRIMITIVE FUNCTION */
-                if ((popped_cntrl_st->node->value).compare("Print") == 0 || (popped_cntrl_st->node->value).compare("print") == 0)
+                if ((popped_ctrl_node->node->value).compare("Print") == 0 || (popped_ctrl_node->node->value).compare("print") == 0)
                 {
                     // do appropriate action
                     // create new execution element
@@ -567,9 +558,9 @@ void execute()
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
                     new_exe_ele->primitive_func_val = PRINT;
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
-                else if ((popped_cntrl_st->node->value).compare("ItoS") == 0 || (popped_cntrl_st->node->value).compare("itos") == 0)
+                else if ((popped_ctrl_node->node->value).compare("ItoS") == 0 || (popped_ctrl_node->node->value).compare("itos") == 0)
                 {
                     // do appropriate action
                     // create new execution element
@@ -577,9 +568,9 @@ void execute()
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
                     new_exe_ele->primitive_func_val = ITOS;
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
-                else if ((popped_cntrl_st->node->value).compare("Istruthvalue") == 0 || (popped_cntrl_st->node->value).compare("istruthvalue") == 0)
+                else if ((popped_ctrl_node->node->value).compare("Istruthvalue") == 0 || (popped_ctrl_node->node->value).compare("istruthvalue") == 0)
                 {
                     // do appropriate action
                     // create new execution element
@@ -587,10 +578,10 @@ void execute()
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
                     new_exe_ele->primitive_func_val = ISTRUTHVALUE;
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
 
-                else if ((popped_cntrl_st->node->value).compare("Isstring") == 0 || (popped_cntrl_st->node->value).compare("isstring") == 0)
+                else if ((popped_ctrl_node->node->value).compare("Isstring") == 0 || (popped_ctrl_node->node->value).compare("isstring") == 0)
                 {
                     // do appropriate action
                     // create new execution element
@@ -598,10 +589,10 @@ void execute()
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
                     new_exe_ele->primitive_func_val = ISSTRING;
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
 
-                else if ((popped_cntrl_st->node->value).compare("Isinteger") == 0 || (popped_cntrl_st->node->value).compare("isinteger") == 0)
+                else if ((popped_ctrl_node->node->value).compare("Isinteger") == 0 || (popped_ctrl_node->node->value).compare("isinteger") == 0)
                 {
                     // do appropriate action
                     // create new execution element
@@ -609,10 +600,10 @@ void execute()
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
                     new_exe_ele->primitive_func_val = ISINTEGER;
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
 
-                else if ((popped_cntrl_st->node->value).compare("Istuple") == 0 || (popped_cntrl_st->node->value).compare("istuple") == 0)
+                else if ((popped_ctrl_node->node->value).compare("Istuple") == 0 || (popped_ctrl_node->node->value).compare("istuple") == 0)
                 {
                     // do appropriate action
                     // create new execution element
@@ -620,10 +611,10 @@ void execute()
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
                     new_exe_ele->primitive_func_val = ISTUPLE;
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
 
-                else if ((popped_cntrl_st->node->value).compare("Order") == 0 || (popped_cntrl_st->node->value).compare("order") == 0)
+                else if ((popped_ctrl_node->node->value).compare("Order") == 0 || (popped_ctrl_node->node->value).compare("order") == 0)
                 {
                     // do appropriate action
                     // create new execution element
@@ -631,18 +622,18 @@ void execute()
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
                     new_exe_ele->primitive_func_val = ORDER;
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
 
-                else if (((popped_cntrl_st->node->value).compare("Stern") == 0) || ((popped_cntrl_st->node->value).compare("stern") == 0) || ((popped_cntrl_st->node->value).compare("Stem") == 0) || ((popped_cntrl_st->node->value).compare("stem") == 0) || ((popped_cntrl_st->node->value).compare("Conc") == 0) || ((popped_cntrl_st->node->value).compare("conc") == 0))
+                else if (((popped_ctrl_node->node->value).compare("Stern") == 0) || ((popped_ctrl_node->node->value).compare("stern") == 0) || ((popped_ctrl_node->node->value).compare("Stem") == 0) || ((popped_ctrl_node->node->value).compare("stem") == 0) || ((popped_ctrl_node->node->value).compare("Conc") == 0) || ((popped_ctrl_node->node->value).compare("conc") == 0))
                 {
                     // do appropriate action
                     // create new execution element
                     exec_node *new_exe_ele = new exec_node;
                     new_exe_ele->type = EXEC_PRIMITIVE_FUNC;
-                    if ((popped_cntrl_st->node->value).compare("Stern") == 0 || (popped_cntrl_st->node->value).compare("stern") == 0)
+                    if ((popped_ctrl_node->node->value).compare("Stern") == 0 || (popped_ctrl_node->node->value).compare("stern") == 0)
                         new_exe_ele->primitive_func_val = STERN;
-                    else if ((popped_cntrl_st->node->value).compare("Stem") == 0 || (popped_cntrl_st->node->value).compare("stem") == 0)
+                    else if ((popped_ctrl_node->node->value).compare("Stem") == 0 || (popped_ctrl_node->node->value).compare("stem") == 0)
                         new_exe_ele->primitive_func_val = STEM;
                     else
                     {
@@ -650,12 +641,12 @@ void execute()
                         new_exe_ele->conc_flag = false;
                     }
                     exec_stack.push(new_exe_ele); // push
-                    // delete popped_cntrl_st;
+                    // delete popped_ctrl_node;
                 }
 
                 else
-                { // if it isn't then it isn't declared so throw some appropriate error to appease the GODs of RPAL
-                    cout << "\nIDENTIFIER : <" << (popped_cntrl_st->node->value) << "> is not declared !" << endl;
+                { 
+                    cout << "\nIDENTIFIER : <" << (popped_ctrl_node->node->value) << "> is not declared !" << endl;
                     exit(0);
                 }
             }
@@ -666,35 +657,35 @@ void execute()
             }
         }
 
-        else if (popped_cntrl_st->node->type == LAMBDA)
+        else if (popped_ctrl_node->node->type == LAMBDA)
         { // if node is LAMBDA
 
             // anoint it with current environment
-            popped_cntrl_st->env = current_environment;
+            popped_ctrl_node->env = current_environment;
 
             // create new exec_node
             exec_node *new_exe_ele = new exec_node();
             new_exe_ele->type = EXEC_CTRL_STRUCT; // set type
-            new_exe_ele->ctrl_node_val = popped_cntrl_st;
+            new_exe_ele->ctrl_node_val = popped_ctrl_node;
 
             // push it on execution stack
             exec_stack.push(new_exe_ele);
         }
 
-        else if (popped_cntrl_st->node->type == TAU)
+        else if (popped_ctrl_node->node->type == TAU)
         { // if node is TAU
             // create an execution element
             exec_node *new_exec_ele = new exec_node; // it will have queue
             new_exec_ele->type = EXEC_TUPPLE;
 
             // pop n element from execution stack
-            int n = popped_cntrl_st->child_count;
+            int n = popped_ctrl_node->child_count;
             for (int i = 0; i < n; i++)
             {
                 exec_node *temp_ele = exec_stack.top();
                 if (temp_ele == NULL)
                 {
-                    cout << "\nERROR: Processing TAU node. Expected number of children: " << n << " .But Execution Stack has less" << endl;
+                    cout << "\nERROR: Processing TAU node. number of nodes in the stack is less than expected" << endl;
                     exit(0);
                 }
                 (new_exec_ele->queue_val).push(temp_ele);
@@ -705,8 +696,7 @@ void execute()
             exec_stack.push(new_exec_ele);
         }
 
-        /* TODO - Remember to update the current environment */
-        else if (popped_cntrl_st->node->type == ENV)
+        else if (popped_ctrl_node->node->type == ENV)
         { // if it is ENVIRONMENT
 
             // pop from execution stack and save it
@@ -717,9 +707,9 @@ void execute()
                 exec_node *another_exe_ele = exec_stack.top();
 
                 // it should be same environment as control stack's one
-                if (!((another_exe_ele->type == EXEC_ENV) && ((another_exe_ele->env_val) == (popped_cntrl_st->env))))
+                if (!((another_exe_ele->type == EXEC_ENV) && ((another_exe_ele->env_val) == (popped_ctrl_node->env))))
                 { // confirm if it is environment and same as the popped one
-                    cout << "ERROR - was expecting an ENVIRONMENT element on execution stack !" << endl;
+                    cout << "ERROR - Expecting an ENVIRONMENT element on execution stack" << endl;
                     exit(0);
                 }
                 exec_stack.pop(); // ENV was matched so pop it
@@ -727,7 +717,7 @@ void execute()
             }
             else
             { // go NULL from stack
-                cout << "ERROR - Was expecting some element on execution stack but got NULL !" << endl;
+                cout << "ERROR - Was expecting some element on execution stack but got NULL" << endl;
                 exit(0);
             }
 
@@ -752,7 +742,7 @@ void execute()
         }
 
         // Handle <YSTAR> node
-        else if (popped_cntrl_st->node->type == YSTAR)
+        else if (popped_ctrl_node->node->type == YSTAR)
         {
 
             // create a new execution element of type EXEC_YSTAR and push it in execution stack
@@ -761,12 +751,11 @@ void execute()
             exec_stack.push(new_y_star);
         }
 
-        else if (popped_cntrl_st->node->type == GAMMA)
+        else if (popped_ctrl_node->node->type == GAMMA)
         { // if node is GAMMA
             // check the element on execution stack
             if ((exec_stack.top())->type == EXEC_CTRL_STRUCT)
-            { // there is lambda on execution stack - RULE 3
-
+            { 
                 // pop the element from execution stack
                 exec_node *temp_exe_ele = exec_stack.top(); // temp_exe_ele contains control structure
                 exec_stack.pop();
@@ -788,14 +777,13 @@ void execute()
                 // pop an element from exection stack
                 exec_node *bind_exe_ele = exec_stack.top();
                 exec_stack.pop();
-                // if bind_exe_ele is TUPPLE  we must have linked list in popped control struct's bound_variable
-                // BUG - assuming that if there is a tupple on Execution Stack then there must be same number of variables to be bound which isn't true
+                // if bind_exe_ele is tuple  we must have linked list in popped control struct's bound_variable
                 if (bind_exe_ele->type == EXEC_TUPPLE)
                 {
-                    // so we have Linked list in temp_exe_ele->ctrl_node_val->bound_variable AND TUPPLE in bind_exe_ele
+                    // so we have Linked list in temp_exe_ele->ctrl_node_val->bound_variable AND tuple in bind_exe_ele
                     Node *temp_bound_var = temp_exe_ele->ctrl_node_val->bound_variable;
 
-                    // if bound variable is not linked list bound whole tupple to the variable
+                    // if bound variable is not linked list bound whole tuple to the variable
                     if (temp_bound_var->right == NULL)
                     {
                         insert(temp_bound_var->value, bind_exe_ele, new_env);
@@ -803,19 +791,17 @@ void execute()
 
                     else
                     {
-
-                        // BUG
                         queue<exec_node *> temp_for_tuple;
 
                         while (temp_bound_var != NULL)
                         {
-                            // get the AST_nodes value to use as key
+                            // get the Nodes value to use as key
                             string temp_key = temp_bound_var->value;
                             // get the value from queue
                             exec_node *popped_from_queue = (bind_exe_ele->queue_val).front();
                             if (popped_from_queue == NULL)
                             {
-                                cout << "ERROR - Binding variables - Tupple on execution has less number of elements ! (Yeah I know its not the world's best user friendly error message)" << endl;
+                                cout << "ERROR - Binding variables - tuple on execution has less number of elements" << endl;
                                 exit(0);
                             }
                             temp_for_tuple.push(popped_from_queue); // preserve the tuple
@@ -863,8 +849,6 @@ void execute()
                     exit(0);
                 }
                 load(temp_exe_ele->ctrl_node_val->lambda_closure);
-
-                // load(temp_exe_ele->ctrl_node_val->lambda_closure);
             }
 
             // Handle <Ystar> node
@@ -879,13 +863,7 @@ void execute()
                     cout << "ERROR -Processing <YSTAR> node. Was expecting <LAMBDA> on execution stack but it is either NULL or some other type !" << endl;
                     exit(0);
                 }
-
-                /* NOTE - ctrl_node_val in exec_node will store both */
                 temp_cs->type = EXEC_ITA; // change its type
-
-                // DEBUGGING
-                // cout<<"**************************LOADING************"<<endl;
-                // load(temp_cs->ctrl_node_val->lambda_closure);
             }
 
             // Handle <EXEC_ITA>
@@ -896,14 +874,8 @@ void execute()
                 // create new execution element of type EXEC_CTRL_STRUCT
                 exec_node *new_ctrl_struct = new exec_node;
                 new_ctrl_struct->type = EXEC_CTRL_STRUCT;
-
-                // BUG - there couldn't be any top element on stack
                 new_ctrl_struct->ctrl_node_val = (exec_stack.top())->ctrl_node_val;
 
-                /*if(i == 1){
-                cout<<"**************************************"<<endl;
-                load(new_ctrl_struct->ctrl_node_val->lambda_closure);
-                } */
                 // push the new element
                 exec_stack.push(new_ctrl_struct);
 
@@ -915,7 +887,7 @@ void execute()
                 control_stack.push(another_gamma_cs);
 
                 // push two gamma CS in CS Stack
-                // control_stack.push(popped_cntrl_st); //pop back the same gamma
+                // control_stack.push(popped_ctrl_node); //pop back the same gamma
 
                 // create new GAMMA ast node and new control stru and push it in CS
                 Node *new_gamma_to_push = new Node("gamma", GAMMA);
@@ -937,7 +909,7 @@ void execute()
                     exec_node *another_ele = exec_stack.top(); // shouldn't be null
                     if (another_ele == NULL)
                     {
-                        cout << "ERROR - Was expecting an element to Print but found NULL please check PRINT again" << endl;
+                        cout << "ERROR - Was expecting an element to Print but found NULL" << endl;
                         exit(0);
                     }
                     // pop the element
@@ -955,9 +927,6 @@ void execute()
 
                 else if (popped_primitive_func->primitive_func_val == ITOS)
                 {
-
-                    // switch(popped_primitive_func->primitive_func_val){
-                    // case PRINT:
                     // pop the node and print it
                     exec_node *another_ele = exec_stack.top(); // shouldn't be null
                     if (another_ele == NULL)
@@ -975,9 +944,6 @@ void execute()
                     stringstream ss;
                     ss << (another_ele->int_val);
                     string temp_string = ss.str();
-                    // sprintf((char*)(temp_string.c_str()), "%d", another_ele->int_val);
-                    // itoa( another_ele->int_val, temp_string.c_str(), 10);
-
                     exec_node *itos_ele = new exec_node;
                     itos_ele->type = EXEC_STR;
                     itos_ele->str_val = temp_string;
@@ -986,8 +952,6 @@ void execute()
 
                 else if (popped_primitive_func->primitive_func_val == ISINTEGER)
                 {
-
-                    // bool isinteger;
                     exec_node *check_integer = exec_stack.top();
                     if (check_integer == NULL)
                     {
@@ -1007,11 +971,10 @@ void execute()
 
                 else if (popped_primitive_func->primitive_func_val == ISTRUTHVALUE)
                 {
-                    // bool istuple ;
                     exec_node *check_tuple = exec_stack.top();
                     if (check_tuple == NULL)
                     {
-                        cout << "ERROR - Please check Istruthvalue again.." << endl;
+                        cout << "ERROR - Please check Istruthvalue" << endl;
                         exit(0);
                     }
 
@@ -1027,11 +990,10 @@ void execute()
 
                 else if (popped_primitive_func->primitive_func_val == ISSTRING)
                 {
-                    // bool istuple ;
                     exec_node *check_tuple = exec_stack.top();
                     if (check_tuple == NULL)
                     {
-                        cout << "ERROR - Please check Isstring again.." << endl;
+                        cout << "ERROR - Please check Isstring" << endl;
                         exit(0);
                     }
 
@@ -1047,11 +1009,10 @@ void execute()
 
                 else if (popped_primitive_func->primitive_func_val == ISTUPLE)
                 {
-                    // bool istuple ;
                     exec_node *check_tuple = exec_stack.top();
                     if (check_tuple == NULL)
                     {
-                        cout << "ERROR - Please check Istuple again.." << endl;
+                        cout << "ERROR - Please check Istuple" << endl;
                         exit(0);
                     }
 
@@ -1071,10 +1032,10 @@ void execute()
                     // pop an element
                     exec_node *temp_tupple = exec_stack.top();
 
-                    // it should be <TUPPLE>
+                    // it should be <tuple>
                     if (temp_tupple == NULL || (temp_tupple->type != EXEC_TUPPLE && temp_tupple->type != EXEC_NILL))
                     {
-                        cout << "ERROR - Was expecting a tupple next to ORDER. Please check ORDER again" << endl;
+                        cout << "ERROR - Was expecting a tuple next to ORDER." << endl;
                         exit(0);
                     }
                     exec_stack.pop();
@@ -1097,14 +1058,13 @@ void execute()
                     exec_node *stem_element = exec_stack.top();
                     if (stem_element == NULL || stem_element->type != EXEC_STR)
                     {
-                        cout << "ERROR - Stem's operand is invalid.." << endl;
+                        cout << "ERROR - Stem's operand is invalid" << endl;
                         exit(0);
                     }
 
                     exec_stack.pop();
                     string stem_string = stem_element->str_val;
                     stem_string = stem_string.substr(0, 1);
-                    // stem_element->str_val = stem_string;
                     exec_node *new_stem_ele = new exec_node;
                     new_stem_ele->type = EXEC_STR;
                     new_stem_ele->str_val = stem_string;
@@ -1132,19 +1092,12 @@ void execute()
                     }
 
                     else
-                    { // conc had been applied. just concetenat the strings (funny spelling)
+                    { 
                         exec_node *conc_string = new exec_node;
                         conc_string->type = EXEC_STR;
                         conc_string->str_val = popped_primitive_func->str_val + first_string->str_val;
                         exec_stack.push(conc_string);
                     }
-
-                    /*exec_node *second_string = exec_stack.top();
-                    if(second_string == NULL || second_string->type != EXEC_STR){
-                        cout<<"ERROR - CONC's second operand is invalid"<<endl;
-                        exit(0);
-                    }
-                    exec_stack.pop(); */
                 }
                 else if (popped_primitive_func->primitive_func_val == STERN)
                 {
@@ -1163,25 +1116,17 @@ void execute()
                     // apply stern
                     string stern_string = stern_element->str_val;
 
-                    // TODO - THERE ARE NO ERROR CHECKS. Lets see if we will get time
                     string resultant_string = stern_string.substr(1, stern_string.size()); // sterning
-                    /*//store the DUMMY in execution stack
-                    exec_node *new_exec_ele = new exec_node;
-                    new_exec_ele->type = EXEC_DUMMY;
-                    exec_stack.push(new_exec_ele); */
                     exec_node *new_stern_exe = new exec_node;
                     new_stern_exe->type = EXEC_STR;
                     new_stern_exe->str_val = resultant_string;
-                    // stern_element->str_val = resultant_string;
                     exec_stack.push(new_stern_exe);
-
-                    //	break;
                 }
             }
 
             else if ((exec_stack.top())->type == EXEC_TUPPLE)
-            { // if there is TUPPLE on Execution Stack
-                // pop the tupple
+            { // if there is tuple on Execution Stack
+                // pop the tuple
                 exec_node *tupple_exe_ele = exec_stack.top(); // this contains queue
                 exec_stack.pop();
 
@@ -1189,7 +1134,7 @@ void execute()
                 exec_node *second_exe_ele = exec_stack.top();
                 if (second_exe_ele == NULL || second_exe_ele->type != EXEC_INT)
                 { // should be INTEGER only
-                    cout << "ERROR - Processing <GAMMA>, <TUPPLE> on Execution Stack - Was expecting an <INTEGER> but either there is nothing or it isn't <INTEGER>" << endl;
+                    cout << "ERROR - Processing <GAMMA>, <tuple> on Execution Stack" << endl;
                     exit(0);
                 }
                 exec_stack.pop();
@@ -1199,24 +1144,21 @@ void execute()
                 {
                     if ((tupple_exe_ele->queue_val).size() == 0)
                     {
-                        cout << "ERROR - Processing <GAMMA>, <TUPPLE> on Execution Stack - There are less number of elements in TUPPLE than the <INTEGER>" << endl;
+                        cout << "ERROR - Processing <GAMMA>, <tuple> on Execution Stack" << endl;
                         exit(0);
                     }
-                    // BUG - pop is deleting the element. we need to preserve the queue
-
                     temp_queue.push((tupple_exe_ele->queue_val).front()); // pop n-1 elements
                     (tupple_exe_ele->queue_val).pop();
                 }
 
                 exec_node *resultant_ele = new exec_node;
-                exec_node *temp_ex_el = (tupple_exe_ele->queue_val).front(); // could be anything
+                exec_node *temp_ex_el = (tupple_exe_ele->queue_val).front();
                 while ((tupple_exe_ele->queue_val).size() != 0)
                 {
                     temp_queue.push((tupple_exe_ele->queue_val).front());
                     (tupple_exe_ele->queue_val).pop();
                 }
 
-                // REALLY SH**TY way to do this
                 resultant_ele->type = temp_ex_el->type; // same type
                 resultant_ele->int_val = temp_ex_el->int_val;
                 resultant_ele->str_val = temp_ex_el->str_val;
@@ -1227,7 +1169,7 @@ void execute()
 
                 if (resultant_ele == NULL)
                 {
-                    cout << "ERROR - Processing <GAMMA>, <TUPPLE> on Execution Stack..Processing last element- There are less number of elements in TUPPLE than the <INTEGER>" << endl;
+                    cout << "ERROR - Processing <GAMMA>, <tuple> on Execution Stack..Processing last element" << endl;
                     exit(0);
                 }
 
@@ -1238,33 +1180,31 @@ void execute()
                     (tupple_exe_ele->queue_val).push(temp_queue.front());
                     temp_queue.pop();
                 }
-                //(tupple_exe_ele->queue_val).pop(); //pop the element
-
                 // push the resultant element in execution stack
                 exec_stack.push(resultant_ele);
             }
             else
             {
-                cout << "WHILE PROCESSING GAMMA - SOME OTHER TYPE !! " << endl;
+                cout << "WHILE PROCESSING GAMMA - SOME OTHER TYPE" << endl;
                 print_exec_node(exec_stack.top());
                 exit(0);
             }
         }
 
-        else if ((popped_cntrl_st->node->type == BETA))
+        else if ((popped_ctrl_node->node->type == BETA))
         { // BETA Node
             // pop an element from exeuction stack. It should be either TRUE or FALSE
             exec_node *beta_exe_element = exec_stack.top();
             if (beta_exe_element == NULL)
             {
-                cout << "ERROR - While processing BETA node - Execution Stack is empty ! " << endl;
+                cout << "ERROR - While processing BETA node - Execution Stack is empty" << endl;
                 exit(0);
             }
 
             exec_stack.pop();
             if (!(beta_exe_element->type == EXEC_TRUE || beta_exe_element->type == EXEC_FALSE))
             {
-                cout << "ERROR - While processing BETA node - Expected truth value of exectuion stack but got something else! " << endl;
+                cout << "ERROR - While processing BETA node" << endl;
                 exit(0);
             }
 
@@ -1276,7 +1216,7 @@ void execute()
                 control_node *temp_delta = control_stack.top(); // it should be lambda_closure else
                 if (temp_delta == NULL || temp_delta->node->type != DELTA_ELSE)
                 {
-                    cout << "ERROR - Processing <BETA> was expecting DELTA_ELSE but it some other type (may be NULL)" << endl;
+                    cout << "ERROR - Processing <BETA> was expecting DELTA_ELSE" << endl;
                     exit(0);
                 }
                 control_stack.pop();
@@ -1284,7 +1224,7 @@ void execute()
                 temp_delta = control_stack.top(); // access delta_then
                 if (temp_delta == NULL || temp_delta->node->type != DELTA_THEN)
                 {
-                    cout << "ERROR - Processing <BETA> was expecting DELTA_THEN but it some other type (may be NULL)" << endl;
+                    cout << "ERROR - Processing <BETA> was expecting DELTA_THEN" << endl;
                     exit(0);
                 }
                 control_stack.pop();
@@ -1297,7 +1237,7 @@ void execute()
                 control_node *temp_delta = control_stack.top();
                 if (temp_delta == NULL || temp_delta->node->type != DELTA_ELSE)
                 {
-                    cout << "ERROR - Processing <BETA> was expecting DELTA_ELSE but it some other type (may be NULL)" << endl;
+                    cout << "ERROR - Processing <BETA> was expecting DELTA_ELSE" << endl;
                     exit(0);
                 }
                 control_stack.pop();
@@ -1305,7 +1245,7 @@ void execute()
                 control_node *temp_delta_discard = control_stack.top(); // access delta_then
                 if (temp_delta_discard == NULL || temp_delta_discard->node->type != DELTA_THEN)
                 {
-                    cout << "ERROR - Processing <BETA> was expecting DELTA_THENbut it some other type (may be NULL)" << endl;
+                    cout << "ERROR - Processing <BETA> was expecting DELTA_THEN" << endl;
                     exit(0);
                 }
                 control_stack.pop();
@@ -1316,20 +1256,20 @@ void execute()
             // load control struct
             load(load_delta->lambda_closure);
         }
-        else if (popped_cntrl_st->node->type == EQ || popped_cntrl_st->node->type == NE)
+        else if (popped_ctrl_node->node->type == EQ || popped_ctrl_node->node->type == NE)
         {
             // pop two element
             exec_node *temp_first = exec_stack.top(); // shouldn't be NULL
             if (temp_first == NULL)
             {
-                cout << "ERROR - Processing EQ operator. But there are less than two elements on Execution Stack ! " << endl;
+                cout << "ERROR - Processing EQ operator. But there are less than two elements on Execution Stack " << endl;
                 exit(0);
             }
             exec_stack.pop(); // actually pop the element
             exec_node *temp_second = exec_stack.top();
             if (temp_second == NULL)
             {
-                cout << "ERROR - Processing EQ operator. But there are less than two elements on Execution Stack ! " << endl;
+                cout << "ERROR - Processing EQ operator. But there are less than two elements on Execution Stack" << endl;
                 exit(0);
             }
             exec_stack.pop(); // actually pop the element
@@ -1338,7 +1278,7 @@ void execute()
             // both should be of either STRING, INTEGER or BOOL
             if (temp_first->type == EXEC_STR && temp_second->type == EXEC_STR)
             {
-                if (popped_cntrl_st->node->type == EQ)
+                if (popped_ctrl_node->node->type == EQ)
                     temp_result = !((temp_first->str_val).compare(temp_second->str_val));
                 else
                     temp_result = ((temp_first->str_val).compare(temp_second->str_val));
@@ -1347,7 +1287,7 @@ void execute()
             else if (temp_first->type == EXEC_INT && temp_second->type == EXEC_INT)
             { // both are INTEGERS
 
-                if (popped_cntrl_st->node->type == EQ)
+                if (popped_ctrl_node->node->type == EQ)
                     temp_result = (temp_first->int_val == temp_second->int_val);
                 else
                     temp_result = (temp_first->int_val != temp_second->int_val);
@@ -1355,7 +1295,7 @@ void execute()
 
             else if ((temp_first->type == EXEC_TRUE || temp_first->type == EXEC_FALSE) && (temp_second->type == EXEC_FALSE || temp_second->type == EXEC_TRUE))
             {
-                if (popped_cntrl_st->node->type == EQ)
+                if (popped_ctrl_node->node->type == EQ)
                 {
 
                     if (temp_first->type == temp_second->type)
@@ -1374,7 +1314,7 @@ void execute()
 
             else
             {
-                cout << "ERROR - EQ operator's operands should have been of same type. " << endl;
+                cout << "ERROR - EQ operator's operands should have been of same type" << endl;
                 exit(0);
             }
             // create new execution element
@@ -1389,13 +1329,13 @@ void execute()
         }
 
         // AUG Operator
-        else if (popped_cntrl_st->node->type == AUG)
+        else if (popped_ctrl_node->node->type == AUG)
         {
             // pop first element
             exec_node *temp_first_tupple = exec_stack.top();
             if (temp_first_tupple == NULL)
             {
-                cout << "ERROR - Processing AUG function. Was expecting <TUPPLE> or <NIL> but received NULL !" << endl;
+                cout << "ERROR - Processing AUG function. Was expecting <tuple> or <NIL>" << endl;
                 exit(0);
             }
 
@@ -1405,23 +1345,23 @@ void execute()
             exec_node *temp_second_tupple = exec_stack.top();
             if (temp_second_tupple == NULL)
             {
-                cout << "ERROR - Processing AUG function. Was expecting <TUPPLE> or <NIL> but received NULL (second operand) !" << endl;
+                cout << "ERROR - Processing AUG function. Was expecting <tuple> or <NIL>" << endl;
                 exit(0);
             }
 
             exec_stack.pop();
 
-            // first element has to be either TUPPLE or NIL
+            // first element has to be either tuple or NIL
             if (!(temp_first_tupple->type == EXEC_TUPPLE || temp_first_tupple->type == EXEC_NILL))
             {
-                cout << "ERROR - CSE_machine - was expecting first operand of AUG to be either TUPPLE or NIL ! Please check AUG again" << endl;
+                cout << "ERROR - CSE_machine - was expecting first operand of AUG to be either tuple or NIL" << endl;
                 exit(0);
             }
 
-            // second element should either be INT, STR, TRUE, FALSE, NIL, DUMMY or TUPPLE
+            // second element should either be INT, STR, TRUE, FALSE, NIL, DUMMY or tuple
             if (!(temp_second_tupple->type == EXEC_TUPPLE || temp_second_tupple->type == EXEC_NILL || temp_second_tupple->type == EXEC_INT || temp_second_tupple->type == EXEC_STR || temp_second_tupple->type == EXEC_TRUE || temp_second_tupple->type == EXEC_FALSE || temp_second_tupple->type == EXEC_DUMMY))
             {
-                cout << "ERROR - CSE_machine - was expecting second operand of AUG to be either TUPPLE, DUMMY, TRUE, FALSE, INTEGER, STRING or NIL ! Please check AUG again" << endl;
+                cout << "ERROR - CSE_machine - was expecting second operand of AUG to be either tuple, DUMMY, TRUE, FALSE, INTEGER, STRING or NIL" << endl;
                 exit(0);
             }
 
@@ -1430,14 +1370,14 @@ void execute()
 
             queue<exec_node *> preserve_tuple;
 
-            // if first element is TUPPLE
+            // if first element is tuple
             if ((temp_first_tupple->type != EXEC_NILL))
             {
                 while ((temp_first_tupple->queue_val).size() != 0)
                 {
                     (new_aug_tuple->queue_val).push((temp_first_tupple->queue_val).front());
                     preserve_tuple.push((temp_first_tupple->queue_val).front()); // to preserve tuple
-                    (temp_first_tupple->queue_val).pop();                        // BUG changing tupple
+                    (temp_first_tupple->queue_val).pop();                       
                 }
             }
             // preserve tuple
@@ -1446,21 +1386,17 @@ void execute()
                 (temp_first_tupple->queue_val).push(preserve_tuple.front());
                 preserve_tuple.pop();
             }
-
-            // change the type of it
-            // temp_first_tupple->type = EXEC_TUPPLE;
             (new_aug_tuple->queue_val).push(temp_second_tupple);
-            //(temp_first_tupple->queue_val).push(temp_second_tupple); //simply push the second guy in queue
-            exec_stack.push(new_aug_tuple); // push back the first tupple
+            exec_stack.push(new_aug_tuple); // push back the first tuple
         }
 
-        else if ((popped_cntrl_st->node->type == AMP) || (popped_cntrl_st->node->type == OR))
+        else if ((popped_ctrl_node->node->type == AMP) || (popped_ctrl_node->node->type == OR))
         {
             // pop two elements from execution stack
             exec_node *first_op = exec_stack.top();
             if (first_op == NULL)
             {
-                cout << "ERROR - check &, or again...first op is not found" << endl;
+                cout << "ERROR -first op is not found" << endl;
                 exit(0);
             }
 
@@ -1469,7 +1405,7 @@ void execute()
             exec_node *second_op = exec_stack.top();
             if (second_op == NULL)
             {
-                cout << "ERROR - check & again...second op is not found" << endl;
+                cout << "ERROR -second op is not found" << endl;
                 exit(0);
             }
 
@@ -1483,14 +1419,14 @@ void execute()
 
             exec_node *new_amp = new exec_node;
 
-            if (popped_cntrl_st->node->type == OR)
+            if (popped_ctrl_node->node->type == OR)
             {
                 if (first_op->type == EXEC_FALSE && second_op->type == EXEC_FALSE)
                     new_amp->type = EXEC_FALSE;
                 else
                     new_amp->type = EXEC_TRUE;
             }
-            else if (popped_cntrl_st->node->type == AMP)
+            else if (popped_ctrl_node->node->type == AMP)
             {
                 if (first_op->type == EXEC_TRUE && second_op->type == EXEC_TRUE)
                     new_amp->type = EXEC_TRUE;
@@ -1501,7 +1437,7 @@ void execute()
         }
 
         // NEG operator
-        else if (popped_cntrl_st->node->type == NEG)
+        else if (popped_ctrl_node->node->type == NEG)
         {
             // pop an element from execution stack
             exec_node *not_ele = exec_stack.top();
@@ -1513,7 +1449,7 @@ void execute()
             exec_stack.pop();
             if (not_ele->type != EXEC_INT)
             {
-                cout << "\tERROR - <NEG> operator was expecting <INTEGER> as operand. Please check again.." << endl;
+                cout << "\tERROR - <NEG> operator was expecting <INTEGER> as operand." << endl;
                 exit(0);
             }
 
@@ -1523,13 +1459,13 @@ void execute()
             exec_stack.push(neg_ele);
         }
 
-        else if (popped_cntrl_st->node->type == NOT)
+        else if (popped_ctrl_node->node->type == NOT)
         {
             // pop an element from execution stack
             exec_node *not_ele = exec_stack.top();
             if (not_ele == NULL)
             {
-                cout << "ERROR - <NOT>'s operand is NULL !" << endl;
+                cout << "ERROR - <NOT>'s operand is NULL" << endl;
                 exit(0);
             }
             exec_stack.pop();
@@ -1550,40 +1486,37 @@ void execute()
         }
 
         // PLUS, DIV operator
-        else if ((popped_cntrl_st->node->type == DIV) ||
-                 popped_cntrl_st->node->type == PLUS ||
-                 (popped_cntrl_st->node->type == MINUS) ||
-                 (popped_cntrl_st->node->type == GR) ||
-                 (popped_cntrl_st->node->type == GE) ||
-                 (popped_cntrl_st->node->type == LE) ||
-                 (popped_cntrl_st->node->type == MULTI) || (popped_cntrl_st->node->type == LS))
+        else if ((popped_ctrl_node->node->type == DIV) ||
+                 popped_ctrl_node->node->type == PLUS ||
+                 (popped_ctrl_node->node->type == MINUS) ||
+                 (popped_ctrl_node->node->type == GR) ||
+                 (popped_ctrl_node->node->type == GE) ||
+                 (popped_ctrl_node->node->type == LE) ||
+                 (popped_ctrl_node->node->type == MULTI) || (popped_ctrl_node->node->type == LS))
         {
             exec_node *temp_pop_1 = exec_stack.top();
             // this should not be NULL and should be integer
             if (temp_pop_1 == NULL || (temp_pop_1->type != EXEC_INT && temp_pop_1->type != EXEC_STR))
             {
-                cout << "ERROR - Processing DIV/PLUS: First Element on execution stack is either not INTEGER or there is no element !" << endl;
+                cout << "ERROR -First Element on execution stack is either not INTEGER , STR or there is no element" << endl;
                 exit(0);
             }
             exec_stack.pop();
 
             exec_node *temp_pop_2 = exec_stack.top(); // pop second element
 
-            // both should not be NULL and should be integers
+            // both should not be NULL and should be integers or strings
             if (temp_pop_2 == NULL || (temp_pop_2->type != temp_pop_1->type))
 
             {
-                cout << "ERROR - Processing DIV/PLUS: Second Element on execution stack is either not INTEGER or there is no element !" << endl;
-                // cout<<"ERROR:While Processing DIV operator - Was expecting two integers on execution stack but got less than that "<<endl;
+                cout << "ERROR -First Element on execution stack is either not INTEGER , STR or there is no element" << endl;
                 exit(0);
             }
             exec_stack.pop();
-            // exec_stack.pop();
-
             // perform calculation
             int temp_result;
 
-            if (popped_cntrl_st->node->type == GR)
+            if (popped_ctrl_node->node->type == GR)
             {
                 temp_result = (temp_pop_1->int_val) > (temp_pop_2->int_val);
                 if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
@@ -1592,7 +1525,7 @@ void execute()
                 }
             }
 
-            else if (popped_cntrl_st->node->type == GE)
+            else if (popped_ctrl_node->node->type == GE)
             {
                 temp_result = (temp_pop_1->int_val) >= (temp_pop_2->int_val);
                 if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
@@ -1601,7 +1534,7 @@ void execute()
                 }
             }
 
-            else if (popped_cntrl_st->node->type == LE)
+            else if (popped_ctrl_node->node->type == LE)
             {
                 temp_result = (temp_pop_1->int_val) <= (temp_pop_2->int_val);
                 if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
@@ -1610,7 +1543,7 @@ void execute()
                 }
             }
 
-            else if (popped_cntrl_st->node->type == LS)
+            else if (popped_ctrl_node->node->type == LS)
             {
                 temp_result = (temp_pop_1->int_val) < (temp_pop_2->int_val);
                 if (temp_pop_1->type == EXEC_STR && temp_pop_2->type == EXEC_STR)
@@ -1624,27 +1557,27 @@ void execute()
 
                 if (temp_pop_1->type != EXEC_INT)
                 {
-                    cout << "ERROR - Processing DIV/PLUS: First Element on execution stack is either not INTEGER or there is no element !" << endl;
+                    cout << "ERROR -First Element on execution stack is either not INTEGER , STR or there is no element" << endl;
                     exit(0);
                 }
 
-                else if (popped_cntrl_st->node->type == DIV)
+                else if (popped_ctrl_node->node->type == DIV)
                     temp_result = (temp_pop_1->int_val) / (temp_pop_2->int_val);
 
-                else if (popped_cntrl_st->node->type == PLUS)
+                else if (popped_ctrl_node->node->type == PLUS)
                     temp_result = (temp_pop_1->int_val) + (temp_pop_2->int_val);
 
-                else if (popped_cntrl_st->node->type == MINUS)
+                else if (popped_ctrl_node->node->type == MINUS)
                     temp_result = (temp_pop_1->int_val) - (temp_pop_2->int_val);
 
-                else if (popped_cntrl_st->node->type == MULTI)
+                else if (popped_ctrl_node->node->type == MULTI)
                     temp_result = (temp_pop_1->int_val) * (temp_pop_2->int_val);
             }
 
             // create new exec_node. btw we don't need the popped ones anymore
             exec_node *new_exe_ele = new exec_node;
 
-            if (popped_cntrl_st->node->type == GR || popped_cntrl_st->node->type == GE || (popped_cntrl_st->node->type == LE) || (popped_cntrl_st->node->type == LS))
+            if (popped_ctrl_node->node->type == GR || popped_ctrl_node->node->type == GE || (popped_ctrl_node->node->type == LE) || (popped_ctrl_node->node->type == LS))
             {
                 if (temp_result)
                     new_exe_ele->type = EXEC_TRUE;
@@ -1660,23 +1593,13 @@ void execute()
             exec_stack.push(new_exe_ele);
         }
 
-        /*else if(popped_cntrl_st->node->type == PLUS){
-            if(verbose_on)
-                cout<<"\t<PLUS> node it is...."<<endl;
-
-        } */
-
         else
         {
             cout << "CSE_machine execution - Some Unexpected type of node in Control Stack !" << endl;
-            print_ast_node(popped_cntrl_st->node);
+            print_node(popped_ctrl_node->node);
 
             exit(0);
         }
     }
 
-    // check execution stack's size
-    // cout<<"EXECUTION STACKS size: "<<(exec_stack.size() )<<endl;
-    // print_exec_node(exec_stack.top() );
-    // if(exec_stack.empty() != true)
 }
